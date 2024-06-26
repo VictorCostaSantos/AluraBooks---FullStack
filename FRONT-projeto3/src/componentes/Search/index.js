@@ -1,8 +1,8 @@
 import Input from '../Input'
 import styled from 'styled-components'
-import { useState } from 'react'
-import { getLivros } from '../../servicos/livros.js'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { getLivros } from '../../servicos/livros'
+import { postFavorito } from '../../servicos/favoritos'
 
 const PesquisaContainer = styled.section`
     background-image: linear-gradient(90deg, #002F52 35%, #326589 165%);
@@ -46,21 +46,22 @@ const Resultado = styled.div`
     }
 `
 
-function Search() {
-    const [livrosPesquisados, setLivrosPesquisados] = useState([])
-    const [livros, setLivros] = useState([])
+function Pesquisa() {
+    const [livrosPesquisados, setLivrosPesquisados] = useState([]);
+    const [livros,  setLivros] = useState([])
 
     useEffect(() => {
-        fetchLivros()
+      fetchLivros()
     }, [])
 
-    async function fetchLivros() {
+    async function fetchLivros(){
         const livrosDaAPI = await getLivros()
         setLivros(livrosDaAPI)
     }
 
-    async function insereFavorito(id) {
-        alert(`O livro de id: ${id} foi inserido com sucesso`)
+    async function insertFavorito(id){
+        await postFavorito(id)
+        alert(`Livro de id: ${id} inserido!`)
     }
 
     return (
@@ -70,19 +71,26 @@ function Search() {
             <Input
                 placeholder="Escreva sua próxima leitura"
                 onBlur={evento => {
-                    const textoDigitado = evento.target.value
-                    const resultadoPesquisa = livros.filter( livro => livro.nome.includes(textoDigitado))
-                    setLivrosPesquisados(resultadoPesquisa)
+                    const textoDigitado = evento.target.value.toLowerCase();
+                    const resultadoPesquisa = livros.filter(livro => livro.nome.toLowerCase().includes(textoDigitado)); 
+                    setLivrosPesquisados(resultadoPesquisa);
+                }}
+                onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                        const textoDigitado = e.target.value.toLowerCase();
+                        const resultadoPesquisa = livros.filter(livro => livro.nome.toLowerCase().includes(textoDigitado));
+                        setLivrosPesquisados(resultadoPesquisa);
+                    }
                 }}
             />
-            { livrosPesquisados.map( livro => (
-                <Resultado onClick={() => insereFavorito(livro.id)}>
-                    <img src={livro.src} alt=""/>
+            {livrosPesquisados.map(livro => (
+                <Resultado onClick={() => insertFavorito(livro.id)} key={livro.id}>
+                    <img src={livro.src} alt={livro.nome} />
                     <p>{livro.nome}</p>
                 </Resultado>
-            ) ) }
+            ))}
         </PesquisaContainer>
-    )
+    );
 }
 
-export default Search
+export default Pesquisa;

@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import { useEffect } from 'react';
+import { useState } from 'react';
+import styled from 'styled-components'
 import { deleteFavorito, getFavoritos } from '../servicos/favoritos';
-import livroImg from '../imagens/livro2.png'
+import livroImg from '../imagens/livro.png'
 
 const AppContainer = styled.div`
     width: 100vw;
@@ -41,42 +42,45 @@ const Titulo = styled.h2`
     text-align: center;
     width: 100%;
     padding-top: 35px
-`;
+`
 
 function Favoritos() {
-  const [favoritos, setFavoritos] = useState([]);
-
-  async function fetchFavoritos() {
-    const favoritosDaAPI = await getFavoritos();
-    setFavoritos(favoritosDaAPI);
-  }
-
-  async function deletarFavorito(id){
-    await deleteFavorito(id)
-    alert(`Livro de id: ${id} deletado!`)
-  }
+  const [favoritos, setFavoritos] = useState([])
 
   useEffect(() => {
-    fetchFavoritos();
-  }, []);
+    fetchFavoritos()
+  }, [])
+
+  async function fetchFavoritos() {
+    const response = await getFavoritos()
+    setFavoritos(response)
+  }
+
+  async function deletaFavorito(id) {
+    await deleteFavorito(id)
+    await fetchFavoritos()
+    alert(`Você deletou o livro de id: ${id}`)
+  }
 
   return (
     <AppContainer>
       <div>
-       <Titulo>Aqui estão seus livros favoritos:</Titulo>
-       <ResultadoContainer>
-         {
-           favoritos.length !== 0 ? favoritos.map(favorito => (
-             <Resultado onClick={() => deletarFavorito(favorito.id)}>
-               <p>{favorito.nome}</p>
-               <img src={livroImg}/>
-             </Resultado>
-           )) : null
-         }
-       </ResultadoContainer>
-     </div>
+        <Titulo>Aqui estão seus livros favoritos:</Titulo>
+        <ResultadoContainer>
+          {
+            favoritos.length !== 0 ? favoritos.map(favorito => (
+              <Resultado onClick={() => deletaFavorito(favorito.id)}>
+                <p>{favorito.nome}</p>
+                <img src={livroImg}
+                alt =''
+                />
+              </Resultado>
+            )) : null
+          }
+        </ResultadoContainer>
+      </div>
     </AppContainer>
   );
 }
 
-export default Favoritos;
+export default Favoritos
